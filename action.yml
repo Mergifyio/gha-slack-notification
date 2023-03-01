@@ -4,7 +4,7 @@ inputs:
   message:
     description: message to post on slack
     required: true
-  job_log:
+  job_url:
     description: url of the job
     required: true
   SLACK_DEPLOYMENT_WEBHOOK_URL:
@@ -34,7 +34,7 @@ runs:
                     "text": "Job log",
                     "emoji": true
                   },
-                  "url": "${{ inputs.job_log }}"
+                  "url": "${{ inputs.job_url }}"
                 }
               }
             ]
