@@ -1,0 +1,45 @@
+name: 'Hello World'
+description: 'Greet someone'
+inputs:
+  message:
+    description: message to post on slack
+    required: true
+  job_log:
+    description: url of the job
+    required: true
+  SLACK_DEPLOYMENT_WEBHOOK_URL:
+    description: Slack webhook url
+    required: true
+
+
+runs:
+  using: "composite"
+  steps:
+    - uses: slackapi/slack-github-action@v1.23.0
+      with:
+        # yamllint disable rule:line-length
+        payload: |
+          {
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "${{ inputs.message }}"
+                },
+                "accessory": {
+                  "type": "button",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Job log",
+                    "emoji": true
+                  },
+                  "url": "${{ inputs.job_log }}"
+                }
+              }
+            ]
+          }
+        # yamllint enable rule:line-length
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
+        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

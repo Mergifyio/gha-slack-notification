@@ -1,0 +1,125 @@
+extends: .github
+
+queue_rules:
+  - name: hotfix
+    allow_inplace_checks: true
+    conditions:
+      - and: &CheckRuns
+          - check-success=actionlint
+    speculative_checks: 5
+
+  - name: default
+    allow_inplace_checks: true
+    conditions:
+      - and: *CheckRuns
+      - schedule=Mon-Fri 09:00-17:30[Europe/Paris]
+    speculative_checks: 5
+
+  - name: lowprio
+    allow_inplace_checks: true
+    conditions:
+      - and: *CheckRuns
+      - schedule=Mon-Fri 09:00-17:00[Europe/Paris]
+    batch_size: 7
+    batch_max_wait_time: 5min
+    queue_branch_merge_method: fast-forward
+    disallow_checks_interruption_from_queues:
+      - default
+
+pull_request_rules:
+  - name: automatic merge for hotfix
+    conditions:
+      - base=main
+      - check-success=semantic-pull-request
+      - "check-success=Rule: testing requirements (post_check)"
+      - or:
+          # Author is engineering manager, we allow with one review
+          - and:
+              - author=@eng-mgr
+              - "#approved-reviews-by>=1"
+          - and:
+              - author=@devs
+              # in any other case, we allow if approve by engineering manager
+              # or anyone if it's a regular fix/revert
+              - or:
+                  - approved-reviews-by=@eng-mgr
+                  - and:
+                      - title~=^(revert|fix)
+                      - "#approved-reviews-by>=1"
+      - label=hotfix
+      - "#changes-requested-reviews-by=0"
+      - "#review-requested=0"
+      - label!=manual merge
+    actions:
+      queue:
+        name: hotfix
+
+  - name: automatic merge
+    conditions:
+      - base=main
+      - check-success=semantic-pull-request
+      - and: *CheckRuns
+      - "#approved-reviews-by>=2"
+      - "#changes-requested-reviews-by=0"
+      - "#review-threads-unresolved=0"
+      - "#review-requested=0"
+      - label!=manual merge
+    actions:
+      queue:
+
+  - name: automatic merge for clifus version bump
+    conditions:
+      - and: *CheckRuns
+      - check-success=semantic-pull-request
+      - author=mergify-ci-bot
+      - label!=manual merge
+      - "title~=^chore: bump"
+      - "#commits=1"
+      - head~=^clifus/
+    actions:
+      queue:
+        name: lowprio
+        method: merge
+
+  - name: automatic merge from trivy
+    conditions:
+      - and: *CheckRuns
+      - check-success=semantic-pull-request
+      - head=trivy/daily-report
+      - author=mergify-ci-bot
+      - label!=manual merge
+      - label!=new CVE
+      - "#commits=1"
+    actions:
+      queue:
+        name: lowprio
+        commit_message_template: null
+        method: merge
+
+  - name: automatic merge from dependabot
+    conditions:
+      - and: *CheckRuns
+      - check-success=semantic-pull-request
+      - author=dependabot[bot]
+      - label!=manual merge
+      - "#commits=1"
+    actions:
+      queue:
+        name: lowprio
+        method: merge
+        commit_message_template: null
+
+  - name: request review
+    conditions:
+      - -author=dependabot[bot]
+      - -author=mergify-ci-bot
+      - -merged
+      - -closed
+      - and: *CheckRuns
+      - "#approved-reviews-by=0"
+      - "#changes-requested-reviews-by=0"
+      - "review-requested!=@devs"
+    actions:
+      request_reviews:
+        teams:
+          - devs
