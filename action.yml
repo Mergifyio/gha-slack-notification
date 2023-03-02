@@ -7,7 +7,7 @@ inputs:
   job_url:
     description: url of the job
     required: true
-  SLACK_DEPLOYMENT_WEBHOOK_URL:
+  SLACK_WEBHOOK_URL:
     description: Slack webhook url
     required: true
 
@@ -41,5 +41,5 @@ runs:
           }
         # yamllint enable rule:line-length
       env:
-        SLACK_WEBHOOK_URL: ${{ inputs.SLACK_DEPLOYMENT_WEBHOOK_URL }}
+        SLACK_WEBHOOK_URL: ${{ inputs.SLACK_WEBHOOK_URL }}
         SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
