@@ -42,55 +42,60 @@ runs:
     - name: Prepare report status
       shell: bash
       id: report-status
+      env:
+        NOTIF_TYPE: ${{ inputs.type }}
+        SLACK_TEXT_MESSAGE: ${{ inputs.message }}
+        PROJECT: ${{ inputs.project }}
+        REPOSITORY: ${{ github.repository }}
+        JOB_ID: ${{ steps.fetch-check-run.outputs.job_id }}
+        JOB_STATUS: ${{ job.status }}
+        REF_NAME: ${{ github.ref_name }}
       run: |
-        PROJECT="${{ inputs.project }}"
-        if [ "${{ job.status }}" == "success" ] ; then
+        if [ "${JOB_STATUS}" == "success" ] ; then
           emoji="🦾"
-        elif [ "${{ job.status }}" == "cancelled" ] ; then
+        elif [ "${JOB_STATUS}" == "cancelled" ] ; then
           emoji="✋"
-        elif [ "${{ job.status }}" == "failure" ] ; then
+        elif [ "${JOB_STATUS}" == "failure" ] ; then
           emoji="💥"
         else
           emoji="❔"
         fi
 
         if [ -z "$PROJECT" ]; then
-          PROJECT="${{ github.repository }}"
-          PROJECT=${PROJECT##*\/}
+          PROJECT=${REPOSITORY##*\/}
         fi
 
-        if [ "${{ inputs.type }}" == "message" ]; then
-          SLACK_TEXT_MESSAGE='${{ inputs.message }}'
+        if [ "${NOTIF_TYPE}" == "message" ]; then
+          # Nothing to do we reuse SLACK_TEXT_MESSAGE as-is
+          :
+        elif [ "${NOTIF_TYPE}" == "release-start" ]; then
+          SLACK_TEXT_MESSAGE="*Starting release (${JOB_ID}) of $PROJECT ${REF_NAME}*"
 
-        elif [ "${{ inputs.type }}" == "release-start" ]; then
-          SLACK_TEXT_MESSAGE="*Starting release (${{ steps.fetch-check-run.outputs.job_id }}) of $PROJECT ${{ github.ref_name }}*"
+        elif [ "${NOTIF_TYPE}" == "release-finish" ]; then
+          SLACK_TEXT_MESSAGE="*Release (${JOB_ID}) of $PROJECT ${REF_NAME} finished ${emoji}*\nConclusion: ${JOB_STATUS}"
 
-        elif [ "${{ inputs.type }}" == "release-finish" ]; then
-          SLACK_TEXT_MESSAGE="*Release (${{ steps.fetch-check-run.outputs.job_id }}) of $PROJECT ${{ github.ref_name }} finished ${emoji}*\nConclusion: ${{ job.status }}"
+        elif [ "${NOTIF_TYPE}" == "deploy-start" ]; then
+          SLACK_TEXT_MESSAGE="*Starting deployment (${JOB_ID}) of $PROJECT*"
 
-        elif [ "${{ inputs.type }}" == "deploy-start" ]; then
-          SLACK_TEXT_MESSAGE="*Starting deployment (${{ steps.fetch-check-run.outputs.job_id }}) of $PROJECT*"
+        elif [ "${NOTIF_TYPE}" == "deploy-finish" ]; then
 
-        elif [ "${{ inputs.type }}" == "deploy-finish" ]; then
-          JOB_ID="${{ steps.fetch-check-run.outputs.job_id }}"
           SLACK_TEXT_MESSAGE=$(cat <<EOF
         *Deployment ($JOB_ID) of $PROJECT finished ${emoji}*
-        Conclusion: ${{ job.status }}
+        Conclusion: ${JOB_STATUS}
         \`\`\`
         $(git log -1)
         \`\`\`
         EOF
-          )
+        )
 
         else
-          echo "Unsupported notification type: ${{ inputs.type }}"
+          echo "Unsupported notification type: ${NOTIF_TYPE}"
           exit 1
         fi
 
         # Replace newline with explicit \n
         SLACK_TEXT_MESSAGE=$(echo "$SLACK_TEXT_MESSAGE" | awk '{printf "%s\\n", $0}')
         echo "SLACK_TEXT_MESSAGE=${SLACK_TEXT_MESSAGE}" >> "$GITHUB_OUTPUT"
-
 
     - uses: slackapi/slack-github-action@v1.23.0
       with:
