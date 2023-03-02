@@ -42,6 +42,19 @@ jobs:
       - name: Build 🔧 & Test 🔍
         run: |
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
-          pip install -r requirements-poetry.txt
-          tools/poetry-ci-install.sh
-          poetry run poe semgrep
+          pip install semgrep
+          semgrep --config=auto --error
+
+  local-action-run:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3.3.0
+      - name: Report status 🔍
+        if: always()
+        uses: ./
+        with:
+          message: "Hi from pull request #${{github.event.number}}."
+          job_url: "https://github.com/Mergifyio/gha-slack-notification"
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_TEST_WEBHOOK }}
