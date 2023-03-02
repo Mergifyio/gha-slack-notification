@@ -43,7 +43,7 @@ runs:
       shell: bash
       id: report-status
       run: |
-        PROJECT="${{ inputs.projet }}"
+        PROJECT="${{ inputs.project }}"
 
         if [ -z "$PROJECT" ]; then
           PROJECT="${{ github.repository }}"
@@ -53,10 +53,23 @@ runs:
         if [ "${{ inputs.type }}" == "message" ]; then
           SLACK_TEXT_MESSAGE="${{ inputs.message }}"
 
-        elif [ "${{ inputs.type }}" == "start" ]; then
+        elif [ "${{ inputs.type }}" == "release-start" ]; then
+          SLACK_TEXT_MESSAGE="*Starting release (${{ steps.fetch-check-run.outputs.job_id }}) of $PROJECT ${{ github.ref_name }}*"
+
+        elif [ "${{ inputs.type }}" == "release-finish" ]; then
+          if [ "${{ job.status }}" == "success" ] ; then
+            emoji="🦾"
+          elif [ "${{ job.status }}" == "cancelled" ] ; then
+            emoji="✋"
+          else
+            emoji="💥"
+          fi
+          SLACK_TEXT_MESSAGE="*Release (${{ steps.fetch-check-run.outputs.job_id }}) of $PROJECT ${{ github.ref_name }} finished*\nConclusion: ${{ job.status }}"
+
+        elif [ "${{ inputs.type }}" == "deploy-start" ]; then
           SLACK_TEXT_MESSAGE="*Starting deployment (${{ steps.fetch-check-run.outputs.job_id }}) of $PROJECT*"
 
-        elif [ "${{ inputs.type }}" == "finish" ]; then
+        elif [ "${{ inputs.type }}" == "deploy-finish" ]; then
 
           if [ "${{ job.status }}" == "success" ] ; then
             emoji="🦾"

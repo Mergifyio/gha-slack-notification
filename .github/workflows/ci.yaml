@@ -58,7 +58,7 @@ jobs:
           message: "Hi from pull request #${{github.event.number}}."
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_TEST_WEBHOOK }}
 
-  local-action-run-with-start-finish:
+  local-action-run-with-deploy:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
@@ -68,12 +68,35 @@ jobs:
         if: always()
         uses: ./
         with:
-          type: start
+          type: deploy-start
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_TEST_WEBHOOK }}
 
       - name: Report stop
         if: always()
         uses: ./
         with:
-          type: finish
+          type: deploy-finish
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_TEST_WEBHOOK }}
+
+
+  local-action-run-with-relase:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3.3.0
+      - name: Report status 🔍
+        if: always()
+        uses: ./
+        with:
+          project: custom-name
+          type: release-start
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_TEST_WEBHOOK }}
+
+      - name: Report stop
+        if: always()
+        uses: ./
+        with:
+          project: custom-name
+          type: release-finish
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_TEST_WEBHOOK }}
