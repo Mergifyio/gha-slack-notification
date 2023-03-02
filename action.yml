@@ -60,7 +60,7 @@ runs:
         fi
 
         if [ "${{ inputs.type }}" == "message" ]; then
-          SLACK_TEXT_MESSAGE="${{ inputs.message }}"
+          SLACK_TEXT_MESSAGE='${{ inputs.message }}'
 
         elif [ "${{ inputs.type }}" == "release-start" ]; then
           SLACK_TEXT_MESSAGE="*Starting release (${{ steps.fetch-check-run.outputs.job_id }}) of $PROJECT ${{ github.ref_name }}*"
