@@ -44,6 +44,15 @@ runs:
       id: report-status
       run: |
         PROJECT="${{ inputs.project }}"
+        if [ "${{ job.status }}" == "success" ] ; then
+          emoji="🦾"
+        elif [ "${{ job.status }}" == "cancelled" ] ; then
+          emoji="✋"
+        elif [ "${{ job.status }}" == "failure" ] ; then
+          emoji="💥"
+        else
+          emoji="❔"
+        fi
 
         if [ -z "$PROJECT" ]; then
           PROJECT="${{ github.repository }}"
@@ -51,34 +60,18 @@ runs:
         fi
 
         if [ "${{ inputs.type }}" == "message" ]; then
-          SLACK_TEXT_MESSAGE="${{ inputs.message }}"
+          SLACK_TEXT_MESSAGE="${{ inputs.message }} ${emoji}\nConclusion: ${{ job.status }}"
 
         elif [ "${{ inputs.type }}" == "release-start" ]; then
           SLACK_TEXT_MESSAGE="*Starting release (${{ steps.fetch-check-run.outputs.job_id }}) of $PROJECT ${{ github.ref_name }}*"
 
         elif [ "${{ inputs.type }}" == "release-finish" ]; then
-          if [ "${{ job.status }}" == "success" ] ; then
-            emoji="🦾"
-          elif [ "${{ job.status }}" == "cancelled" ] ; then
-            emoji="✋"
-          else
-            emoji="💥"
-          fi
-          SLACK_TEXT_MESSAGE="*Release (${{ steps.fetch-check-run.outputs.job_id }}) of $PROJECT ${{ github.ref_name }} finished*\nConclusion: ${{ job.status }}"
+          SLACK_TEXT_MESSAGE="*Release (${{ steps.fetch-check-run.outputs.job_id }}) of $PROJECT ${{ github.ref_name }} finished ${emoji}*\nConclusion: ${{ job.status }}"
 
         elif [ "${{ inputs.type }}" == "deploy-start" ]; then
           SLACK_TEXT_MESSAGE="*Starting deployment (${{ steps.fetch-check-run.outputs.job_id }}) of $PROJECT*"
 
         elif [ "${{ inputs.type }}" == "deploy-finish" ]; then
-
-          if [ "${{ job.status }}" == "success" ] ; then
-            emoji="🦾"
-          elif [ "${{ job.status }}" == "cancelled" ] ; then
-            emoji="✋"
-          else
-            emoji="💥"
-          fi
-
           JOB_ID="${{ steps.fetch-check-run.outputs.job_id }}"
           SLACK_TEXT_MESSAGE=$(cat <<EOF
         *Deployment ($JOB_ID) of $PROJECT finished ${emoji}*
