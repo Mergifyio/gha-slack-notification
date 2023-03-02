@@ -1,7 +1,7 @@
 name: 'Hello World'
 description: 'Greet someone'
 inputs:
-  mode:
+  type:
     description: could be message, start, finish
     required: false
     default: message
@@ -50,13 +50,13 @@ runs:
           PROJECT=${PROJECT##*\/}
         fi
 
-        if [ "${{ inputs.mode }}" == "message" ]; then
+        if [ "${{ inputs.type }}" == "message" ]; then
           SLACK_TEXT_MESSAGE="${{ inputs.message }}"
 
-        elif [ "${{ inputs.mode }}" == "start" ]; then
+        elif [ "${{ inputs.type }}" == "start" ]; then
           SLACK_TEXT_MESSAGE="*Starting deployment (${{ steps.fetch-check-run.outputs.job_id }}) of $PROJECT*"
 
-        elif [ "${{ inputs.mode }}" == "finish" ]; then
+        elif [ "${{ inputs.type }}" == "finish" ]; then
 
           if [ "${{ job.status }}" == "success" ] ; then
             emoji="🦾"
@@ -77,7 +77,7 @@ runs:
           )
 
         else
-          echo "Unsupported notification mode: ${{ inputs.mode }}"
+          echo "Unsupported notification type: ${{ inputs.type }}"
           exit 1
         fi
 

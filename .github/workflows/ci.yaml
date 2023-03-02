@@ -68,12 +68,12 @@ jobs:
         if: always()
         uses: ./
         with:
-          mode: start
+          type: start
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_TEST_WEBHOOK }}
 
       - name: Report stop
         if: always()
         uses: ./
         with:
-          mode: finish
+          type: finish
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_TEST_WEBHOOK }}
