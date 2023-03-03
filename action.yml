@@ -72,7 +72,11 @@ runs:
           SLACK_TEXT_MESSAGE="*Starting release (${JOB_ID}) of $PROJECT ${REF_NAME}*"
 
         elif [ "${NOTIF_TYPE}" == "release-finish" ]; then
-          SLACK_TEXT_MESSAGE="*Release (${JOB_ID}) of $PROJECT ${REF_NAME} finished ${emoji}*\nConclusion: ${JOB_STATUS}"
+          SLACK_TEXT_MESSAGE=$(cat <<EOF
+        *Release (${JOB_ID}) of $PROJECT ${REF_NAME} finished ${emoji}*
+        Conclusion: ${JOB_STATUS}
+        EOF
+        )
 
         elif [ "${NOTIF_TYPE}" == "deploy-start" ]; then
           SLACK_TEXT_MESSAGE="*Starting deployment (${JOB_ID}) of $PROJECT*"
@@ -93,8 +97,8 @@ runs:
           exit 1
         fi
 
-        # Replace newline with explicit \n
-        SLACK_TEXT_MESSAGE=$(echo "$SLACK_TEXT_MESSAGE" | awk '{printf "%s\\n", $0}')
+        # Escape newline/quote/... with jq
+        SLACK_TEXT_MESSAGE=$(echo "$SLACK_TEXT_MESSAGE" | jq -Rsa .)
         echo "SLACK_TEXT_MESSAGE=${SLACK_TEXT_MESSAGE}" >> "$GITHUB_OUTPUT"
 
     - uses: slackapi/slack-github-action@v1.23.0
@@ -107,7 +111,7 @@ runs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "${{ steps.report-status.outputs.SLACK_TEXT_MESSAGE }}"
+                  "text": ${{ steps.report-status.outputs.SLACK_TEXT_MESSAGE }}
                 },
                 "accessory": {
                   "type": "button",

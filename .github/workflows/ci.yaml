@@ -55,7 +55,7 @@ jobs:
         if: always()
         uses: ./
         with:
-          message: "Hi from pull request #${{github.event.number}}.\n```Block code```\nthird line"
+          message: "Hi from pull request \"#${{github.event.number}}\".\n```Block code```\nthird line"
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_TEST_WEBHOOK }}
 
   local-action-run-with-deploy:
