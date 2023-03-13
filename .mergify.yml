@@ -5,7 +5,7 @@ queue_rules:
     allow_inplace_checks: true
     conditions:
       - and: &CheckRuns
-          - check-success=actionlint
+          - check-success=linters
     speculative_checks: 5
 
   - name: default

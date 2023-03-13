@@ -1,0 +1,20 @@
+extends: default
+ignore: |
+  .git
+  .tox
+  docs/node_modules
+  installer/node_modules
+  zfixtures
+  .venv
+rules:
+  document-start: disable
+  truthy: disable
+  comments:
+    level: error
+  comments-indentation:
+    level: error
+  line-length:
+    max: 110
+  quoted-strings:
+    quote-type: double
+    required: false

@@ -1,5 +1,5 @@
-name: 'Hello World'
-description: 'Greet someone'
+name: "GitHub action Slack notification"
+description: "GitHub action to send Slack notification when GitHub workflow start and finish"
 inputs:
   type:
     description: could be message, start, finish
