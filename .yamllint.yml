@@ -1,10 +1,6 @@
 extends: default
 ignore: |
   .git
-  .tox
-  docs/node_modules
-  installer/node_modules
-  zfixtures
   .venv
 rules:
   document-start: disable
