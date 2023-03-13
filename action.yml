@@ -66,8 +66,11 @@ runs:
         fi
 
         if [ "${NOTIF_TYPE}" == "message" ]; then
-          # Nothing to do we reuse SLACK_TEXT_MESSAGE as-is
-          :
+          SLACK_TEXT_MESSAGE=$(cat <<EOF
+        *$SLACK_TEXT_MESSAGE :${emoji}*
+        Conclusion: ${JOB_STATUS}
+        EOF)
+
         elif [ "${NOTIF_TYPE}" == "release-start" ]; then
           SLACK_TEXT_MESSAGE="*Starting release (${JOB_ID}) of $PROJECT ${REF_NAME}*"
 
