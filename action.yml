@@ -15,8 +15,12 @@ inputs:
     description: deprecated not used anymore
     default: ""
   SLACK_WEBHOOK_URL:
-    description: Slack webhook url
+    description: Slack webhook url for all notifications
     required: true
+  FAILURE_ONLY_SLACK_WEBHOOK_URL:
+    description: Slack webhook url for error notification
+    required: false
+    default: ""
 
 
 runs:
@@ -131,4 +135,35 @@ runs:
         # yamllint enable rule:line-length
       env:
         SLACK_WEBHOOK_URL: ${{ inputs.SLACK_WEBHOOK_URL }}
+        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+
+    - uses: slackapi/slack-github-action@v1.23.0
+      if: ${{ job.status == 'failure' && inputs.FAILURE_ONLY_SLACK_WEBHOOK_URL != '' }}
+      with:
+        # yamllint disable rule:line-length
+        payload: |
+          {
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": ${{ steps.report-status.outputs.SLACK_TEXT_MESSAGE }}
+                },
+                "accessory": {
+                  "type": "button",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Job log",
+                    "emoji": true
+                  },
+                  "url": "${{ steps.fetch-check-run.outputs.job_url }}"
+                }
+              }
+            ]
+          }
+        # yamllint enable rule:line-length
+      env:
+        SLACK_WEBHOOK_URL: ${{ inputs.FAILURE_ONLY_SLACK_WEBHOOK_URL }}
         SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
