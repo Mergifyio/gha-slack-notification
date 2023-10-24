@@ -21,6 +21,10 @@ inputs:
     description: Slack webhook url for error notification
     required: false
     default: ""
+  OVERRIDE_JOB_STATUS:
+    description: The hardcoded JOB status (in case of action is used in an composite action)
+    required: false
+    default: ""
 
 
 runs:
@@ -54,7 +58,11 @@ runs:
         JOB_ID: ${{ steps.fetch-check-run.outputs.job_id }}
         JOB_STATUS: ${{ job.status }}
         REF_NAME: ${{ github.ref_name }}
+        OVERRIDE_JOB_STATUS: ${{ inputs.OVERRIDE_JOB_STATUS }}
       run: |
+        if [ "${OVERRIDE_JOB_STATUS}" ]; then
+          JOB_STATUS="${OVERRIDE_JOB_STATUS}"
+        fi
         if [ "${JOB_STATUS}" == "success" ] ; then
           emoji="🦾"
         elif [ "${JOB_STATUS}" == "cancelled" ] ; then
