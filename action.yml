@@ -97,15 +97,22 @@ runs:
           SLACK_TEXT_MESSAGE="*Starting deployment (${JOB_ID}) of $PROJECT*"
 
         elif [ "${NOTIF_TYPE}" == "deploy-finish" ]; then
-
-          SLACK_TEXT_MESSAGE=$(cat <<EOF
+          if [ -d .git ]; then
+            SLACK_TEXT_MESSAGE=$(cat <<EOF
         *Deployment ($JOB_ID) of $PROJECT finished ${emoji}*
         Conclusion: ${JOB_STATUS}
         \`\`\`
-        $(git log -1 | sed -e 's/```/\\\\`\\\\`\\\\`/g')
+        $(git log -1 | sed -e 's/```/\\\`\\\`\\\`/g')
         \`\`\`
         EOF
         )
+          else
+            SLACK_TEXT_MESSAGE=$(cat <<EOF
+        *Deployment ($JOB_ID) of $PROJECT finished ${emoji}*
+        Conclusion: ${JOB_STATUS}
+        EOF
+        )
+          fi
 
         else
           echo "Unsupported notification type: ${NOTIF_TYPE}"
