@@ -102,7 +102,7 @@ runs:
         *Deployment ($JOB_ID) of $PROJECT finished ${emoji}*
         Conclusion: ${JOB_STATUS}
         \`\`\`
-        $(git log -1 | sed -e 's/```/\\\\`\\\\`\\\\`/g')
+        $(git log -1 | sed -e 's/```/\\\\`\\\\`\\\\`/g')
         \`\`\`
         EOF
         )
