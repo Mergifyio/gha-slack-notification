@@ -30,7 +30,7 @@ pull_request_rules:
   - name: automatic merge for hotfix
     conditions:
       - base=main
-      - check-success=semantic-pull-request
+      - "check-success=Rule: Conventional Commit (post_check)"
       - "check-success=Rule: testing requirements (post_check)"
       - or:
           # Author is engineering manager, we allow with one review
@@ -57,7 +57,7 @@ pull_request_rules:
   - name: automatic merge
     conditions:
       - base=main
-      - check-success=semantic-pull-request
+      - "check-success=Rule: Conventional Commit (post_check)"
       - and: *CheckRuns
       - "#approved-reviews-by>=2"
       - "#changes-requested-reviews-by=0"
@@ -70,7 +70,7 @@ pull_request_rules:
   - name: automatic merge for clifus version bump
     conditions:
       - and: *CheckRuns
-      - check-success=semantic-pull-request
+      - "check-success=Rule: Conventional Commit (post_check)"
       - author=mergify-ci-bot
       - label!=manual merge
       - "title~=^chore: bump"
@@ -84,7 +84,7 @@ pull_request_rules:
   - name: automatic merge from trivy
     conditions:
       - and: *CheckRuns
-      - check-success=semantic-pull-request
+      - "check-success=Rule: Conventional Commit (post_check)"
       - head=trivy/daily-report
       - author=mergify-ci-bot
       - label!=manual merge
@@ -99,7 +99,7 @@ pull_request_rules:
   - name: automatic merge from dependabot
     conditions:
       - and: *CheckRuns
-      - check-success=semantic-pull-request
+      - "check-success=Rule: Conventional Commit (post_check)"
       - author=dependabot[bot]
       - label!=manual merge
       - "#commits=1"
