@@ -3,21 +3,21 @@ extends: .github
 queue_rules:
   - name: hotfix
     allow_inplace_checks: true
-    conditions:
+    queue_conditions:
       - and: &CheckRuns
           - check-success=linters
     speculative_checks: 5
 
   - name: default
     allow_inplace_checks: true
-    conditions:
+    queue_conditions:
       - and: *CheckRuns
       - schedule=Mon-Fri 09:00-17:30[Europe/Paris]
     speculative_checks: 5
 
   - name: lowprio
     allow_inplace_checks: true
-    conditions:
+    queue_conditions:
       - and: *CheckRuns
       - schedule=Mon-Fri 09:00-17:00[Europe/Paris]
     batch_size: 7
