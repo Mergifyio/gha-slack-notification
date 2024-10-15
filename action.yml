@@ -44,9 +44,17 @@ runs:
             repo: context.repo.repo,
             run_id: context.runId
           });
-          const job = data.jobs.find(
-            (j) => j.name.includes(context.job)
+          // Looks for exact match
+          let job = data.jobs.find(
+            (j) => j.name === context.job
           )
+          if (!job) {
+            // matrix? let's do a loose match and pick the first one
+            // FIXME: can we do better?
+            job = data.jobs.find(
+              (j) => j.name.includes(context.job)
+            )
+          }
           core.setOutput("job_url", job.html_url);
           core.setOutput("job_id", String(job.id));
 
