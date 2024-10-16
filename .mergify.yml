@@ -6,15 +6,11 @@ queue_rules:
     conditions:
       - and: &CheckRuns
           - check-success=linters
-    speculative_checks: 5
-
   - name: default
     allow_inplace_checks: true
     conditions:
       - and: *CheckRuns
       - schedule=Mon-Fri 09:00-17:30[Europe/Paris]
-    speculative_checks: 5
-
   - name: lowprio
     allow_inplace_checks: true
     conditions:
@@ -93,7 +89,7 @@ pull_request_rules:
     actions:
       queue:
         name: lowprio
-        commit_message_template: null
+        commit_message_template:
         method: merge
 
   - name: automatic merge from dependabot
@@ -107,7 +103,7 @@ pull_request_rules:
       queue:
         name: lowprio
         method: merge
-        commit_message_template: null
+        commit_message_template:
 
   - name: request review
     conditions:
@@ -123,3 +119,6 @@ pull_request_rules:
       request_reviews:
         teams:
           - devs
+
+merge_queue:
+  max_parallel_checks: 5
