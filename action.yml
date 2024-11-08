@@ -67,133 +67,24 @@ runs:
         PROJECT: ${{ inputs.project }}
         REPOSITORY: ${{ github.repository }}
         JOB_ID: ${{ steps.fetch-check-run.outputs.job_id }}
+        JOB_URL: ${{ steps.fetch-check-run.outputs.job_url }}
         JOB_STATUS: ${{ job.status }}
         REF_NAME: ${{ github.ref_name }}
         OVERRIDE_JOB_STATUS: ${{ inputs.OVERRIDE_JOB_STATUS }}
         EXTRA_MESSAGE: ${{ inputs.extra_message }}
-      run: |
-        if [ "${OVERRIDE_JOB_STATUS}" ]; then
-          JOB_STATUS="${OVERRIDE_JOB_STATUS}"
-        fi
-        if [ "${JOB_STATUS}" == "success" ] ; then
-          emoji="🦾"
-        elif [ "${JOB_STATUS}" == "cancelled" ] ; then
-          emoji="✋"
-        elif [ "${JOB_STATUS}" == "failure" ] ; then
-          emoji="💥"
-        else
-          emoji="❔"
-        fi
-
-        if [ -z "$PROJECT" ]; then
-          PROJECT=${REPOSITORY##*\/}
-        fi
-
-        if [ "${NOTIF_TYPE}" == "message" ]; then
-          SLACK_TEXT_MESSAGE=$(cat <<EOF
-        *$SLACK_TEXT_MESSAGE :${emoji}*
-        Conclusion: ${JOB_STATUS}
-        EOF)
-
-        elif [ "${NOTIF_TYPE}" == "release-start" ]; then
-          SLACK_TEXT_MESSAGE="*Starting release (${JOB_ID}) of $PROJECT ${REF_NAME}*"
-
-        elif [ "${NOTIF_TYPE}" == "release-finish" ]; then
-          SLACK_TEXT_MESSAGE=$(cat <<EOF
-        *Release (${JOB_ID}) of $PROJECT ${REF_NAME} finished ${emoji}*
-        Conclusion: ${JOB_STATUS}
-        ${EXTRA_MESSAGE}
-        EOF
-        )
-
-        elif [ "${NOTIF_TYPE}" == "deploy-start" ]; then
-          SLACK_TEXT_MESSAGE="*Starting deployment (${JOB_ID}) of $PROJECT*"
-
-        elif [ "${NOTIF_TYPE}" == "deploy-finish" ]; then
-          if [ -d .git ]; then
-            SLACK_TEXT_MESSAGE=$(cat <<EOF
-        *Deployment ($JOB_ID) of $PROJECT finished ${emoji}*
-        Conclusion: ${JOB_STATUS}
-        \`\`\`
-        $(git log -1 | sed -e 's/```/~~~/g')
-        \`\`\`
-        ${EXTRA_MESSAGE}
-        EOF
-        )
-          else
-            SLACK_TEXT_MESSAGE=$(cat <<EOF
-        *Deployment ($JOB_ID) of $PROJECT finished ${emoji}*
-        Conclusion: ${JOB_STATUS}
-        ${EXTRA_MESSAGE}
-        EOF
-        )
-          fi
-
-        else
-          echo "Unsupported notification type: ${NOTIF_TYPE}"
-          exit 1
-        fi
-
-        # Escape newline/quote/... with jq
-        SLACK_TEXT_MESSAGE=$(echo "$SLACK_TEXT_MESSAGE" | jq -Rsa .)
-        echo "SLACK_TEXT_MESSAGE=${SLACK_TEXT_MESSAGE}" >> "$GITHUB_OUTPUT"
+      run: python generate_slack_payload.py
 
     - uses: slackapi/slack-github-action@v1.23.0
       with:
-        # yamllint disable rule:line-length
-        payload: |
-          {
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": ${{ steps.report-status.outputs.SLACK_TEXT_MESSAGE }}
-                },
-                "accessory": {
-                  "type": "button",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "Job log",
-                    "emoji": true
-                  },
-                  "url": "${{ steps.fetch-check-run.outputs.job_url }}"
-                }
-              }
-            ]
-          }
-        # yamllint enable rule:line-length
+        payload: ${{ steps.report-status.outputs.SLACK_PAYLOAD }}
       env:
         SLACK_WEBHOOK_URL: ${{ inputs.SLACK_WEBHOOK_URL }}
         SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
-
     - uses: slackapi/slack-github-action@v1.23.0
       if: ${{ job.status == 'failure' && inputs.FAILURE_ONLY_SLACK_WEBHOOK_URL != '' }}
       with:
-        # yamllint disable rule:line-length
-        payload: |
-          {
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": ${{ steps.report-status.outputs.SLACK_TEXT_MESSAGE }}
-                },
-                "accessory": {
-                  "type": "button",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "Job log",
-                    "emoji": true
-                  },
-                  "url": "${{ steps.fetch-check-run.outputs.job_url }}"
-                }
-              }
-            ]
-          }
-        # yamllint enable rule:line-length
+        payload: ${{ steps.report-status.outputs.SLACK_PAYLOAD }}
       env:
         SLACK_WEBHOOK_URL: ${{ inputs.FAILURE_ONLY_SLACK_WEBHOOK_URL }}
         SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
