@@ -72,7 +72,7 @@ runs:
         REF_NAME: ${{ github.ref_name }}
         OVERRIDE_JOB_STATUS: ${{ inputs.OVERRIDE_JOB_STATUS }}
         EXTRA_MESSAGE: ${{ inputs.extra_message }}
-      run: python generate_slack_payload.py
+      run: python "${GITHUB_ACTION_PATH}/generate_slack_payload.py"
 
     - uses: slackapi/slack-github-action@v1.23.0
       with:
