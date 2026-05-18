@@ -35,7 +35,7 @@ runs:
   steps:
     - name: Fetch job check run information
       id: fetch-check-run
-      uses: actions/github-script@v6
+      uses: actions/github-script@v9
       with:
         result-encoding: string
         script: |
