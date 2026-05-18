@@ -74,14 +74,14 @@ runs:
         EXTRA_MESSAGE: ${{ inputs.extra_message }}
       run: python "${GITHUB_ACTION_PATH}/generate_slack_payload.py"
 
-    - uses: slackapi/slack-github-action@v1.23.0
+    - uses: slackapi/slack-github-action@v3.0.3
       with:
         payload: ${{ steps.report-status.outputs.SLACK_PAYLOAD }}
       env:
         SLACK_WEBHOOK_URL: ${{ inputs.SLACK_WEBHOOK_URL }}
         SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
-    - uses: slackapi/slack-github-action@v1.23.0
+    - uses: slackapi/slack-github-action@v3.0.3
       if: ${{ job.status == 'failure' && inputs.FAILURE_ONLY_SLACK_WEBHOOK_URL != '' }}
       with:
         payload: ${{ steps.report-status.outputs.SLACK_PAYLOAD }}
