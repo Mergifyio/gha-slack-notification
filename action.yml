@@ -76,15 +76,13 @@ runs:
 
     - uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
       with:
+        webhook: ${{ inputs.SLACK_WEBHOOK_URL }}
+        webhook-type: incoming-webhook
         payload: ${{ steps.report-status.outputs.SLACK_PAYLOAD }}
-      env:
-        SLACK_WEBHOOK_URL: ${{ inputs.SLACK_WEBHOOK_URL }}
-        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
     - uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
       if: ${{ job.status == 'failure' && inputs.FAILURE_ONLY_SLACK_WEBHOOK_URL != '' }}
       with:
+        webhook: ${{ inputs.FAILURE_ONLY_SLACK_WEBHOOK_URL }}
+        webhook-type: incoming-webhook
         payload: ${{ steps.report-status.outputs.SLACK_PAYLOAD }}
-      env:
-        SLACK_WEBHOOK_URL: ${{ inputs.FAILURE_ONLY_SLACK_WEBHOOK_URL }}
-        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
