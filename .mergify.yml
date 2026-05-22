@@ -19,8 +19,7 @@ queue_rules:
     batch_size: 7
     batch_max_wait_time: 5min
     queue_branch_merge_method: fast-forward
-    disallow_checks_interruption_from_queues:
-      - default
+    merge_method: merge
 
 pull_request_rules:
   - name: automatic merge for hotfix
@@ -75,7 +74,6 @@ pull_request_rules:
     actions:
       queue:
         name: lowprio
-        method: merge
 
   - name: automatic merge from trivy
     conditions:
@@ -89,8 +87,6 @@ pull_request_rules:
     actions:
       queue:
         name: lowprio
-        commit_message_template:
-        method: merge
 
   - name: automatic merge from dependabot
     conditions:
@@ -102,8 +98,6 @@ pull_request_rules:
     actions:
       queue:
         name: lowprio
-        method: merge
-        commit_message_template:
 
   - name: request review
     conditions:
