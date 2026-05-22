@@ -2,24 +2,20 @@ extends: .github
 
 queue_rules:
   - name: hotfix
-    allow_inplace_checks: true
-    conditions:
+    merge_conditions:
       - and: &CheckRuns
           - check-success=linters
   - name: default
-    allow_inplace_checks: true
-    conditions:
+    merge_conditions:
       - and: *CheckRuns
       - schedule=Mon-Fri 09:00-17:30[Europe/Paris]
   - name: lowprio
-    allow_inplace_checks: true
-    conditions:
+    merge_conditions:
       - and: *CheckRuns
       - schedule=Mon-Fri 09:00-17:00[Europe/Paris]
     batch_size: 7
     batch_max_wait_time: 5min
-    queue_branch_merge_method: fast-forward
-    merge_method: merge
+    merge_method: fast-forward
 
 pull_request_rules:
   - name: automatic merge for hotfix
