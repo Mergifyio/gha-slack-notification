@@ -12,6 +12,11 @@ queue_rules:
   - name: lowprio
     merge_conditions:
       - and: *CheckRuns
+      # Dependabot-triggered runs get no Actions secrets, so these jobs only
+      # pass on the queue's own run. They are the only test of action.yml.
+      - check-success=local-action-run-with-message
+      - check-success=local-action-run-with-deploy
+      - check-success=local-action-run-with-relase
       - schedule=Mon-Fri 09:00-17:00[Europe/Paris]
     batch_size: 7
     batch_max_wait_time: 5min
@@ -87,7 +92,6 @@ pull_request_rules:
   - name: automatic merge from dependabot
     conditions:
       - and: *CheckRuns
-      - "check-success=Rule: Conventional Commit (post_check)"
       - author=dependabot[bot]
       - label!=manual merge
       - "#commits=1"
