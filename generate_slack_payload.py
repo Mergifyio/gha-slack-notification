@@ -15,8 +15,15 @@ repository = os.environ["REPOSITORY"]
 
 project = os.environ["PROJECT"] or repository.split("/")[-1]
 
-job_id = os.environ["JOB_ID"]
-job_url = os.environ["JOB_URL"]
+run_id = os.environ["GITHUB_RUN_ID"]
+run_url = f"{os.environ['GITHUB_SERVER_URL']}/{repository}/actions/runs/{run_id}"
+if os.environ["JOB_ID"]:
+    job_id = os.environ["JOB_ID"]
+    job_url = f"{run_url}/job/{job_id}"
+else:
+    # No job.check_run_id (GitHub Enterprise Server): name and link the run.
+    job_id = run_id
+    job_url = run_url
 ref_name = os.environ["REF_NAME"]
 
 notif_type = os.environ["NOTIF_TYPE"]

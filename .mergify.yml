@@ -5,6 +5,7 @@ queue_rules:
     merge_conditions:
       - and: &CheckRuns
           - check-success=linters
+          - check-success=job-urls
   - name: default
     merge_conditions:
       - and: *CheckRuns
@@ -13,7 +14,7 @@ queue_rules:
     merge_conditions:
       - and: *CheckRuns
       # Dependabot-triggered runs get no Actions secrets, so these jobs only
-      # pass on the queue's own run. They are the only test of action.yml.
+      # pass on the queue's own run. They are the only ones posting to Slack.
       - check-success=local-action-run-with-message
       - check-success=local-action-run-with-deploy
       - check-success=local-action-run-with-relase

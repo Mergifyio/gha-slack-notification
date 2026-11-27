@@ -94,3 +94,54 @@ jobs:
           project: custom-name
           type: release-finish
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_TEST_WEBHOOK }}
+
+  job-url:
+    # More jobs than one page (30) of the run's job list, with names sharing
+    # a prefix ("job-url 1" starts "job-url 10"): each must link its own job.
+    name: job-url ${{ matrix.n }}
+    strategy:
+      # The run must hold more than 30 jobs, not run them all at once.
+      max-parallel: 10
+      fail-fast: false
+      matrix:
+        n: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+            17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+    timeout-minutes: 5
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Stand in for Slack
+        id: slack
+        run: python tests/slack_webhook_stub.py "$RUNNER_TEMP/slack-payload.json"
+
+      - name: Report status 🔍
+        uses: ./
+        with:
+          message: job-url ${{ matrix.n }}
+          SLACK_WEBHOOK_URL: ${{ steps.slack.outputs.url }}
+
+      - name: Check the Job log button links this job
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_NAME: job-url ${{ matrix.n }}
+        run: |
+          url=$(jq -r '.blocks[0].accessory.url' "$RUNNER_TEMP/slack-payload.json")
+          linked=$(gh api "repos/$GITHUB_REPOSITORY/actions/jobs/${url##*/}" --jq '[.name, .html_url] | @tsv')
+          if [ "$linked" != "$JOB_NAME"$'\t'"$url" ]; then
+            echo "::error::The Job log button links \"$linked\", not this job, \"$JOB_NAME\""
+            exit 1
+          fi
+
+  job-urls:
+    # The required check standing for every job of job-url.
+    needs: job-url
+    if: ${{ !cancelled() }}
+    timeout-minutes: 5
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Check every job-url job passed
+        env:
+          RESULT: ${{ needs.job-url.result }}
+        run: test "$RESULT" = success

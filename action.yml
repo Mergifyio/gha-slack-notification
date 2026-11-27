@@ -33,31 +33,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Fetch job check run information
-      id: fetch-check-run
-      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
-      with:
-        result-encoding: string
-        script: |
-          const { data } = await github.rest.actions.listJobsForWorkflowRun({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            run_id: context.runId
-          });
-          // Looks for exact match
-          let job = data.jobs.find(
-            (j) => j.name === context.job
-          )
-          if (!job) {
-            // matrix? let's do a loose match and pick the first one
-            // FIXME: can we do better?
-            job = data.jobs.find(
-              (j) => j.name.includes(context.job)
-            )
-          }
-          core.setOutput("job_url", job.html_url);
-          core.setOutput("job_id", String(job.id));
-
     - name: Prepare report status
       shell: bash
       id: report-status
@@ -66,8 +41,7 @@ runs:
         SLACK_TEXT_MESSAGE: ${{ inputs.message }}
         PROJECT: ${{ inputs.project }}
         REPOSITORY: ${{ github.repository }}
-        JOB_ID: ${{ steps.fetch-check-run.outputs.job_id }}
-        JOB_URL: ${{ steps.fetch-check-run.outputs.job_url }}
+        JOB_ID: ${{ job.check_run_id }}
         JOB_STATUS: ${{ job.status }}
         REF_NAME: ${{ github.ref_name }}
         OVERRIDE_JOB_STATUS: ${{ inputs.OVERRIDE_JOB_STATUS }}
